@@ -1,0 +1,114 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyNxeC247QTHtvz4k3CXqA2U",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/sreevyshnavi2203-code/CodeAlpha_webscrapping/blob/main/codeAlpha_exploratoryDataAnalysis\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 12,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "collapsed": true,
+        "id": "HNGyl1vH8S8N",
+        "outputId": "1f4fa307-8b50-4e8e-b4e3-b7af83e7d73b"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Successfully Scraped Data:\n",
+            "                                          Book Title   Price Availability\n",
+            "0                               A Light in the Attic  £51.77     In stock\n",
+            "1                                 Tipping the Velvet  £53.74     In stock\n",
+            "2                                         Soumission  £50.10     In stock\n",
+            "3                                      Sharp Objects  £47.82     In stock\n",
+            "4              Sapiens: A Brief History of Humankind  £54.23     In stock\n",
+            "5                                    The Requiem Red  £22.65     In stock\n",
+            "6  The Dirty Little Secrets of Getting Your Dream...  £33.34     In stock\n",
+            "7  The Coming Woman: A Novel Based on the Life of...  £17.93     In stock\n",
+            "8  The Boys in the Boat: Nine Americans and Their...  £22.60     In stock\n",
+            "9                                    The Black Maria  £52.15     In stock\n",
+            "\n",
+            "Data saved successfully to 'scraped_books_data.csv'!\n"
+          ]
+        }
+      ],
+      "source": [
+        "import pandas as pd\n",
+        "import requests\n",
+        "from bs4 import BeautifulSoup\n",
+        "\n",
+        "# 1. Target URL\n",
+        "url = \"http://books.toscrape.com/\"\n",
+        "\n",
+        "# 2. Send HTTP Request\n",
+        "headers = {\n",
+        "    \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\"\n",
+        "}\n",
+        "response = requests.get(url, headers=headers)\n",
+        "\n",
+        "# 3. Parse HTML content using BeautifulSoup\n",
+        "soup = BeautifulSoup(response.content, \"html.parser\")\n",
+        "\n",
+        "# 4. Extract data\n",
+        "books = soup.find_all(\"article\", class_=\"product_pod\")\n",
+        "\n",
+        "titles = []\n",
+        "prices = []\n",
+        "availabilities = []\n",
+        "\n",
+        "for book in books:\n",
+        "    # Extract Title\n",
+        "    title = book.h3.a[\"title\"]\n",
+        "    titles.append(title)\n",
+        "\n",
+        "    # Extract Price\n",
+        "    price = book.find(\"p\", class_=\"price_color\").text\n",
+        "    prices.append(price)\n",
+        "\n",
+        "    # Extract Availability\n",
+        "    availability = book.find(\"p\", class_=\"instock availability\").text.strip()\n",
+        "    availabilities.append(availability)\n",
+        "\n",
+        "# 5. Create a Pandas DataFrame\n",
+        "df = pd.DataFrame(\n",
+        "    {\"Book Title\": titles, \"Price\": prices, \"Availability\": availabilities}\n",
+        ")\n",
+        "\n",
+        "# Display the scraped data\n",
+        "print(\"Successfully Scraped Data:\")\n",
+        "print(df.head(10))\n",
+        "\n",
+        "# 6. Save data to a CSV file\n",
+        "df.to_csv(\"scraped_books_data.csv\", index=False)\n",
+        "print(\"\\nData saved successfully to 'scraped_books_data.csv'!\")"
+      ]
+    }
+  ]
+}

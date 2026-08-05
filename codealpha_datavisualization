@@ -1,0 +1,68 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+
+# 1. Load data
+df = pd.read_csv("scraped_books_data.csv")
+
+# 2. Clean Price column
+df["Price_Cleaned"] = (
+    df["Price"].str.replace("£", "").str.replace("Â", "").astype(float)
+)
+
+# 3. Categorize books into Price Ranges
+def price_category(price):
+    if price < 20:
+        return "Budget (< £20)"
+    elif 20 <= price <= 40:
+        return "Mid-Range (£20-£40)"
+    else:
+        return "Premium (> £40)"
+
+
+df["Price_Category"] = df["Price_Cleaned"].apply(price_category)
+
+# 4. Create Data Visualization Dashboard (4 Visuals)
+fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+fig.suptitle("Data Visualization Dashboard - Book Market Analysis", fontsize=16)
+
+# Visual 1: Price Category Distribution (Pie Chart)
+category_counts = df["Price_Category"].value_counts()
+axes[0, 0].pie(
+    category_counts,
+    labels=category_counts.index,
+    autopct="%1.1f%%",
+    colors=["#ff9999", "#66b3ff", "#99ff99"],
+)
+axes[0, 0].set_title("Book Share by Price Range")
+
+# Visual 2: Price Spread Boxplot
+sns.boxplot(
+    ax=axes[0, 1], x="Price_Category", y="Price_Cleaned", data=df, palette="Set2"
+)
+axes[0, 1].set_title("Price Distribution across Categories")
+axes[0, 1].set_xlabel("Category")
+axes[0, 1].set_ylabel("Price (£)")
+
+# Visual 3: Top 5 Most Expensive Books (Horizontal Bar Chart)
+top_5 = df.nlargest(5, "Price_Cleaned")
+sns.barplot(
+    ax=axes[1, 0],
+    x="Price_Cleaned",
+    y="Book Title",
+    data=top_5,
+    palette="Blues_r",
+)
+axes[1, 0].set_title("Top 5 Highest Priced Books")
+axes[1, 0].set_xlabel("Price (£)")
+
+# Visual 4: Stock Availability Count (Bar Chart)
+sns.countplot(
+    ax=axes[1, 1], x="Availability", data=df, palette="magma"
+)
+axes[1, 1].set_title("Stock Status Count")
+axes[1, 1].set_xlabel("Availability")
+
+plt.tight_layout(rect=[0, 0, 1, 0.95])
+plt.show()
